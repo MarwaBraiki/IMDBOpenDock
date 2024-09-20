@@ -13,33 +13,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin' # Optional: Use 'zulu' or 'adopt' if you prefer another distribution
-        java-version: '17'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # Use 'zulu' or 'adopt' if you prefer another distribution
+          java-version: '21'
 
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
 
-    - name: Run tests with Maven
-      run: mvn test
+      - name: Run tests with Maven
+        run: mvn test
 
-    - name: Create Pull Request to Main
-      if: success()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh auth login --with-token <<< "${GITHUB_TOKEN}"
-        gh pr create --base main --head develop --title "[Pull Request] Automated Testing Pull Request" --body "Automated PR created after successful tests Further Description added from previous commits: "
+      # Uncomment the section below to enable automatic PR creation after successful tests
+      # - name: Create Pull Request to Main
+      #   if: success()
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh auth login --with-token <<< "${GITHUB_TOKEN}"
+      #     gh pr create --base main --head develop --title "[Pull Request] Automated Testing Pull Request" --body "Automated PR created after successful tests. Further description added from previous commits."
