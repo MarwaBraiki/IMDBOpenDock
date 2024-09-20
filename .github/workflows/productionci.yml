@@ -22,7 +22,7 @@ jobs:
   # Job for building and deploying the application
   build_and_deploy:
     runs-on: ubuntu-latest  # Use the latest Ubuntu version as the runner
-    environment: production  # Specify that this runs on the production environment
+    environment: Production  # Specify that this runs on the production environment
 
     steps:
       - name: Checkout Code Repository  # Step to checkout the code repository
