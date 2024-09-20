@@ -1,56 +1,76 @@
 name: ProductionCI  # Name of the GitHub Actions workflow
 
-# Enable Buildkit to speed up image building
 env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
 
-# Define the events that trigger this workflow
 on:
-  # Trigger on push to the main branch after a pull request is merged
   push:
     branches: ['main']
     paths-ignore: ['docs/**']
 
-# Define concurrency settings to ensure multiple workflows don't interfere
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}  # Group by head ref or run ID
-  cancel-in-progress: true  # Cancel previous runs if a new one is triggered
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
-# Define jobs to run in this workflow
 jobs:
-  # Job for building and deploying the application
   build_and_deploy:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu version as the runner
-    environment: Production  # Specify that this runs on the production environment
+    runs-on: ubuntu-latest  # Use Ubuntu as the runner
+    environment: Production
 
     steps:
       - name: Checkout Code Repository  # Step to checkout the code repository
-        uses: actions/checkout@v4  # Use GitHub's checkout action (v4)
+        uses: actions/checkout@v4
 
-      - name: Build the Docker stack  # Step to build the Docker stack
-        env:  # Set environment variables from GitHub Secrets
-          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}  # Production secrets
+      # Install Java 21 on the runner
+      - name: Install Java 21
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-21-jdk  # Install Java 21
+
+      - name: Verify Java installation
+        run: |
+          java -version  # Check that Java 21 is installed
+
+      # Install Maven on the runner
+      - name: Install Maven
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y maven  # Install Maven
+
+      - name: Verify Maven installation
+        run: |
+          mvn -version  # Check Maven installation
+
+      # Build the Maven application
+      - name: Build the application with Maven
+        run: |
+          mvn clean package -DskipTests  # Build the project without running tests
+
+      # Build the Docker stack
+      - name: Build Docker stack
+        env:
+          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
           MARIADB_USER: ${{ secrets.MARIADB_USER }}
-
         run: |
-          docker compose -f Docker/docker-compose.yml build  # Build all services defined in Docker/docker-compose.yml
+          docker compose -f Docker/docker-compose.yml build  # Build all services
 
-      - name: Log in to Docker Hub  # Step to log in to Docker Hub
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
         run: |
-          echo "dckr_pat_2YFGPju7TdRPMdeXk7dP-4T9UvE" | docker login -u "blackwolfben" --password-stdin
+          echo "dckr_pat_2YFGPju7TdRPMdeXk7dP-4T9UvE" | docker login -u "blackwolfben" --password-stdin  # Keep login credentials
 
-      - name: Push Docker images to Docker Hub  # Step to push the images
+      # Push Docker images to Docker Hub
+      - name: Push Docker images to Docker Hub
         run: |
-          docker compose -f Docker/docker-compose.yml push  # Push all images defined in Docker/docker-compose.yml
+          docker compose -f Docker/docker-compose.yml push  # Push all images to Docker Hub
 
-      - name: Deploy Application with Docker  # Step to deploy the application
+      # Deploy the application
+      - name: Deploy Application with Docker
         run: |
-          echo "Deploying the application with Docker..."
-          docker compose -f Docker/docker-compose.yml up -d --remove-orphans  # Start the stack in detached mode
-          echo "Application deployed successfully."
+          docker compose -f Docker/docker-compose.yml up -d --remove-orphans  # Start the services
 
+      # Tear down the previous Docker stack
       - name: Tear down the previous Docker stack
         run: |
-          docker compose -f Docker/docker-compose.yml down  # Take down the stack
-          echo "Previous Docker stack taken down."
+          docker compose -f Docker/docker-compose.yml down  # Stop and remove the previous stack
