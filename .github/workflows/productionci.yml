@@ -63,7 +63,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
           MARIADB_USER: ${{ secrets.MARIADB_USER }}
         run: |
-          docker compose -f Docker/docker-compose.yml build  # Build all services
+          docker compose --env-file .env.production -f Docker/docker-compose.yml build
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
@@ -78,7 +78,7 @@ jobs:
       # Deploy the application
       - name: Deploy Application with Docker
         run: |
-          docker compose -f Docker/docker-compose.yml up -d --remove-orphans  # Start the services
+          docker compose --env-file .env.production -f Docker/docker-compose.yml up -d --remove-orphans # Start the services
 
       # Tear down the previous Docker stack
       - name: Tear down the previous Docker stack

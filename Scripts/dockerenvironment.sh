@@ -12,4 +12,4 @@ docker run -d --name MariDb \
 docker run -d --name TestSpring \
   -p 8080:8080 \
   -v "B:/JavaApp:/usr/src/app" \
-  openjdk:21-jdk-slim  # Using Java 21
+  openjdk:21  # Using Java 21
