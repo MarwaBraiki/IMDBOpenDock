@@ -22,11 +22,21 @@ jobs:
       - name: Checkout Code Repository  # Step to checkout the code repository
         uses: actions/checkout@v4
 
-      # Install Java 21 on the runner
-      - name: Install Java 21
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-21-jdk  # Install Java 21
+      # Cache Maven dependencies to speed up builds
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository  # Maven local repository location
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}  # Use hash of the POM file for cache key
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Install Java 21 using Temurin distribution
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
       - name: Verify Java installation
         run: |
