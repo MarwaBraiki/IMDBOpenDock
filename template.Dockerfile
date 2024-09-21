@@ -1,32 +1,34 @@
-# Build stage using Maven with Temurin JDK 21
+# Build stage with Temurin JDK 21 and Maven
 FROM eclipse-temurin:21 AS builder
 
-# Set the working directory inside the container for the build
+# Install Maven
+RUN apt-get update && apt-get install -y maven
+
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy only the pom.xml file first to leverage Docker's layer caching for dependencies
-COPY pom.xml .
-
-# Pre-fetch Maven dependencies to use caching and speed up subsequent builds
+# Copy the Maven project files
+COPY pom.xml ./
+# Fetch all dependencies to cache them
 RUN mvn dependency:go-offline -B
 
-# Copy the source code (after caching dependencies)
+# Copy the source code
 COPY src ./src
 
-# Package the application, skipping tests to speed up the build process
+# Package the application, skipping tests to speed up the build
 RUN mvn clean package -DskipTests
 
-# Runtime stage using a slim Temurin JRE for running the application
+# Base image for running the application using Temurin JDK 21
 FROM eclipse-temurin:21
 
-# Set the working directory inside the container for running the app
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Expose the port your application will run on (adjust if necessary)
+# Expose the application port
 EXPOSE 8080
 
-# Copy the JAR file from the build stage
+# Copy the JAR from the build stage
 COPY --from=builder /usr/src/app/target/*.jar /usr/src/app/app.jar
 
-# Command to run the application
+# Entrypoint and command to run the application
 ENTRYPOINT ["java", "-jar", "/usr/src/app/app.jar"]
