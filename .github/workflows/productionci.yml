@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_deploy:
+  Build_PublishDockerhub:
     runs-on: ubuntu-latest  # Use Ubuntu as the runner
     environment: Production
 
@@ -73,12 +73,12 @@ jobs:
       # Push Docker images to Docker Hub
       - name: Push Docker images to Docker Hub
         run: |
-          docker compose -f Docker/docker-compose.yml push  # Push all images to Docker Hub
+          docker-compose --env-file Docker/.env.production -f Docker/docker-compose.yml push  # Push all images to Docker Hub
 
       # Deploy the application
-      - name: Deploy Application with Docker
-        run: |
-          docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml up -d --remove-orphans # Start the services
+   #   - name: Deploy Application with Docker
+   #     run: |
+    #      docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml up -d --remove-orphans # Start the services
 
       # Tear down the previous Docker stack
       - name: Tear down the previous Docker stack
