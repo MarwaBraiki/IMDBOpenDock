@@ -73,7 +73,7 @@ jobs:
       # Push Docker images to Docker Hub
       - name: Push Docker images to Docker Hub
         run: |
-          docker-compose --env-file Docker/.env.production -f Docker/docker-compose.yml push  # Push all images to Docker Hub
+          docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml push  # Push all images to Docker Hub
 
       # Deploy the application
    #   - name: Deploy Application with Docker
