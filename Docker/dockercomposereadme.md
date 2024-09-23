@@ -1,34 +1,35 @@
 This is a Readme for the file in this same directory that should have the following structure
+
 ```yaml
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/testimdb
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: bl@dg3r$$
+   app:
+      build:
+         context: ..
+         dockerfile: ../mariadb.Dockerfile
+      ports:
+         - "8080:8080"
+      depends_on:
+         - db
+      environment:
+         SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/testimdb
+         SPRING_DATASOURCE_USERNAME: root
+         SPRING_DATASOURCE_PASSWORD: bl@dg3r$$
 
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: your_database
-      POSTGRES_USER: your_username
-      POSTGRES_PASSWORD: your_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
+   db:
+      image: postgres:13
+      environment:
+         POSTGRES_DB: your_database
+         POSTGRES_USER: your_username
+         POSTGRES_PASSWORD: your_password
+      ports:
+         - "5432:5432"
+      volumes:
+         - db_data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+   db_data:
 ```
 
 ### `docker/README.md`

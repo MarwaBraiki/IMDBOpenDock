@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   mariadb:
-    image: blackwolfben/tpimagesfordiginamic:mariadb  # Push mariadb image to Docker Hub repo
+    build:
+      context: .
+      dockerfile: Dockerfile.mariadb
     container_name: MariDb
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_PASSWORD}
@@ -10,11 +12,11 @@ services:
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     ports:
-      - "3306:3306"
+    - "3306:3306"
     volumes:
-      - ./MariaDBData:/var/lib/mysql
+    - ./MariaDBData:/var/lib/mysql
     networks:
-      - app-network
+    - app-network
 
   app:
     image: blackwolfben/tpimagesfordiginamic:spring-app  # Push app image to Docker Hub repo
