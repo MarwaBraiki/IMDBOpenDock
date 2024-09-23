@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mariadb:
     build:
-      context: .
+      context: ..
       dockerfile: mariadb.Dockerfile
     container_name: MariDb
     environment:
