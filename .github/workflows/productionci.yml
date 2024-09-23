@@ -57,6 +57,11 @@ jobs:
         run: |
           mvn clean package -DskipTests  # Build the project without running tests
 
+      # Tear down the previous Docker stack (Optional if needed before building)
+      - name: Tear down the previous Docker stack
+        run: |
+          docker compose -f Docker/docker-compose.yml down  # Stop and remove the previous stack
+
       # Build the Docker stack
       - name: Build Docker stack
         env:
@@ -65,22 +70,17 @@ jobs:
         run: |
           docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml build
 
-      # Log in to Docker Hub
+      # Log in to Docker Hub using hardcoded personal access token (PTA)
       - name: Log in to Docker Hub
         run: |
-          echo "dckr_pat_2YFGPju7TdRPMdeXk7dP-4T9UvE" | docker login -u "blackwolfben" --password-stdin  # Keep login credentials
+          echo "dckr_pat_2YFGPju7TdRPMdeXk7dP-4T9UvE" | docker login -u "blackwolfben" --password-stdin  # Hardcoded PTA
 
-      # Push Docker images to Docker Hub
+      # Push Docker images to Docker Hub repo 'tpimagesfordiginamic'
       - name: Push Docker images to Docker Hub
         run: |
           docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml push  # Push all images to Docker Hub
 
-      # Deploy the application
-   #   - name: Deploy Application with Docker
-   #     run: |
-    #      docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml up -d --remove-orphans # Start the services
-
-      # Tear down the previous Docker stack
-      - name: Tear down the previous Docker stack
+      # Clean up Docker resources (Optional)
+      - name: Clean up Docker resources
         run: |
-          docker compose -f Docker/docker-compose.yml down  # Stop and remove the previous stack
+          docker system prune -f
