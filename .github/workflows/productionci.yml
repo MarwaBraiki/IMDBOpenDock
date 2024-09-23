@@ -1,0 +1,86 @@
+name: ProductionCI  # Name of the GitHub Actions workflow
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore: ['docs/**']
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  Build_PublishDockerhub:
+    runs-on: ubuntu-latest  # Use Ubuntu as the runner
+    environment: Production
+
+    steps:
+      - name: Checkout Code Repository  # Step to checkout the code repository
+        uses: actions/checkout@v4
+
+      # Cache Maven dependencies to speed up builds
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository  # Maven local repository location
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}  # Use hash of the POM file for cache key
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Install Java 21 using Temurin distribution
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Verify Java installation
+        run: |
+          java -version  # Check that Java 21 is installed
+
+      # Install Maven on the runner
+      - name: Install Maven
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y maven  # Install Maven
+
+      - name: Verify Maven installation
+        run: |
+          mvn -version  # Check Maven installation
+
+      # Build the Maven application
+      - name: Build the application with Maven
+        run: |
+          mvn clean package -DskipTests  # Build the project without running tests
+
+      # Tear down the previous Docker stack (Optional if needed before building)
+      - name: Tear down the previous Docker stack
+        run: |
+          docker compose -f Docker/docker-compose.yml down  # Stop and remove the previous stack
+
+      # Build the Docker stack
+      - name: Build Docker stack
+        env:
+          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
+          MARIADB_USER: ${{ secrets.MARIADB_USER }}
+        run: |
+          docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml build
+
+      # Log in to Docker Hub using hardcoded personal access token (PTA)
+      - name: Log in to Docker Hub
+        run: |
+          echo "dckr_pat_2YFGPju7TdRPMdeXk7dP-4T9UvE" | docker login -u "blackwolfben" --password-stdin  # Hardcoded PTA
+
+      # Push Docker images to Docker Hub repo 'tpimagesfordiginamic'
+      - name: Push Docker images to Docker Hub
+        run: |
+          docker compose --env-file Docker/.env.production -f Docker/docker-compose.yml push  # Push all images to Docker Hub
+
+      # Clean up Docker resources (Optional)
+      - name: Clean up Docker resources
+        run: |
+          docker system prune -f

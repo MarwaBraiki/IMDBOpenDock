@@ -1,18 +1,25 @@
-# Build stage with Java 21 image
-FROM maven:3.8.1-openjdk-21 AS builder
+# Build stage with Temurin JDK 21 and Maven
+FROM eclipse-temurin:21 AS builder
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
 # Copy the Maven project files
-COPY pom.xml .
+COPY pom.xml ./
+# Fetch all dependencies to cache them
+RUN mvn dependency:go-offline -B
+
+# Copy the source code
 COPY src ./src
 
 # Package the application, skipping tests to speed up the build
 RUN mvn clean package -DskipTests
 
-# Base image for running the application (using Java 21)
-FROM eclipse-temurin:21-jre
+# Base image for running the application using Temurin JDK 21
+FROM eclipse-temurin:21
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
