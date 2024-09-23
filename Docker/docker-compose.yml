@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   mariadb:
+    image: blackwolfben/tpimagesfordiginamic:maridb
     build:
       context: ..
       dockerfile: mariadb.Dockerfile
