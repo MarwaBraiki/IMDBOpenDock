@@ -12,9 +12,9 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/your_database
-      SPRING_DATASOURCE_USERNAME: your_username
-      SPRING_DATASOURCE_PASSWORD: your_password
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/testimdb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: bl@dg3r$$
 
   db:
     image: postgres:13

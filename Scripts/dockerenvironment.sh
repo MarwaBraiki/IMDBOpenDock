@@ -1,7 +1,7 @@
 # Run MariaDB
 docker run -d --name MariDb \
   -e MARIADB_ROOT_PASSWORD=bl@dg3r$$ \
-  -e MARIADB_DATABASE=ImDbOpenDB \
+  -e MARIADB_DATABASE=testimdb\
   -e MARIADB_USER=myuser \
   -e MARIADB_PASSWORD=bl@dg3r$$ \
   -p 3306:3306 \
